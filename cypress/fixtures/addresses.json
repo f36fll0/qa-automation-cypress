@@ -1,0 +1,24 @@
+{
+  "addressBook": {
+    "firstname": "Fran",
+    "lastname": "Lopez",
+    "company": "LopezSA",
+    "address": "Libertad 32",
+    "address2": "Odisea S/N",
+    "city": "Cordoba",
+    "postcode": "000001",
+    "country": "Spain",
+    "region": "Córdoba"
+  },
+  "addressBook2": {
+    "firstname": "Juan",
+    "lastname": "Muñoz",
+    "company": "MuñozSA",
+    "address": "Humildad 33",
+    "address2": "Ocaso S/N",
+    "city": "Cuenca",
+    "postcode": "000023",
+    "country": "Spain",
+    "region": "Cuenca"
+  }
+}
