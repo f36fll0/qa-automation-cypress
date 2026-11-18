@@ -1,0 +1,29 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: opencart-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: opencart
+      MYSQL_DATABASE: opencart
+      MYSQL_USER: opencart
+      MYSQL_PASSWORD: opencart
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-popencart"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  opencart:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opencart
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ../opencart/upload:/var/www/html
+    working_dir: /var/www/html

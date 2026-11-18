@@ -1,0 +1,97 @@
+
+name: Cypress CI
+
+on:
+  push:
+    branches: [clean-code]
+  pull_request:
+    branches: [clean-code]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout QA project
+        uses: actions/checkout@v7
+
+      - name: Download OpenCart 4.1.0.3
+        uses: actions/checkout@v7
+        with:
+          repository: opencart/opencart
+          ref: 4.1.0.3
+          path: opencart
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Prepare OpenCart configuration
+        run: |
+          cp opencart/upload/config-dist.php opencart/upload/config.php
+          cp opencart/upload/admin/config-dist.php opencart/upload/admin/config.php
+
+      - name: Start Docker containers
+        run: docker compose -f docker/docker-compose.yml up -d --build
+
+      - name: Wait for PHP container
+        run: |
+          for i in {1..30}; do
+            if docker compose -f docker/docker-compose.yml exec -T opencart php -v; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PHP container did not start"
+          exit 1
+
+      - name: Install OpenCart
+        run: |
+          docker compose -f docker/docker-compose.yml exec -T opencart \
+            php install/cli_install.php install \
+            --username admin \
+            --email admin@example.com \
+            --password password123 \
+            --http_server http://localhost/ \
+            --language en-gb \
+            --db_driver mysqli \
+            --db_hostname mysql \
+            --db_username opencart \
+            --db_password opencart \
+            --db_database opencart \
+            --db_port 3306 \
+            --db_prefix oc_
+
+      - name: Remove OpenCart installer
+        run: docker compose -f docker/docker-compose.yml exec -T opencart rm -rf install
+
+      - name: Wait for OpenCart
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost/ > /dev/null; then
+              echo "OpenCart is responding"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "OpenCart did not respond"
+          exit 1
+
+      - name: Run Cypress tests
+        run: npx cypress run
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker compose -f docker/docker-compose.yml logs
+
+      - name: Stop Docker containers
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down -v
