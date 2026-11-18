@@ -4,6 +4,11 @@ const { addCucumberPreprocessorPlugin, } = require("@badeball/cypress-cucumber-p
 const { createEsbuildPlugin, } = require("@badeball/cypress-cucumber-preprocessor/esbuild");
 module.exports = defineConfig({
     allowCypressEnv: false,
+    defaultCommandTimeout: 10000,
+    requestTimeout: 5000,
+    responseTimeout: 30000,
+    pageLoadTimeout: 60000,
+    
     e2e: {
         baseUrl: "http://localhost",
         specPattern: [

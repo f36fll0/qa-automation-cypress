@@ -52,18 +52,18 @@ When("verifies the product, quantity, and price", () => {
     CatalogPage.viewQuantity(productName)
         .invoke("text")
         .then((data) => {
-        const quantity = data.match(/\d+/)[0];
-        CatalogPage.viewPrice(productName)
-            .invoke("text")
-            .then((data) => {
-            const price = data.trim();
-            CatalogPage.viewCart();
-            cy.url().should("include", "route=checkout/cart");
-            ShoppingCartPage.product(productName);
-            ShoppingCartPage.quantity(productName, quantity);
-            ShoppingCartPage.totalPrice(productName, price);
+            const quantity = data.match(/\d+/)[0];
+            CatalogPage.viewPrice(productName)
+                .invoke("text")
+                .then((data) => {
+                    const price = data.trim();
+                    CatalogPage.viewCart();
+                    cy.url().should("include", "route=checkout/cart");
+                    ShoppingCartPage.product(productName);
+                    ShoppingCartPage.quantity(productName, quantity);
+                    ShoppingCartPage.totalPrice(productName, price);
+                });
         });
-    });
 });
 When("completes the shipping and payment details", () => {
     ShoppingCartPage.checkoutButton();
@@ -85,12 +85,18 @@ When("completes the shipping and payment details", () => {
         }
     });
 });
+
 When("confirms the order", () => {
     CheckoutPage.confirmOrderButton(true);
 });
+
 Then("the order confirmation should be displayed", () => {
+    cy.url({ timeout: 10000 })
+        .should("include", "route=checkout/success");
+
     SuccesCheckoutPage.checktittle();
 });
+
 Then("the order should appear in the order history", () => {
     SuccesCheckoutPage.continueButton();
     LoginPage.visit();

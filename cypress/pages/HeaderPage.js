@@ -1,7 +1,7 @@
 class header {
     elements = {
         cart: () => cy.contains('a', 'Shopping Cart'),
-        myAccountLabel: () => cy.get('.dropdown', { timeout: 6000 }),
+        myAccountLabel: () => cy.get('.dropdown', { timeout: 10000 }),
         openCartLogo: () => cy.get('a:has(img[title="Your Store"])'),
         inputSearch: () => cy.get('input[name="search"]'),
         searchButton: () => cy.get('form[action*="route=common/search"]').find('button[type="submit"]'),

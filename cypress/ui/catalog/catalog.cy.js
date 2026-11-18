@@ -98,7 +98,7 @@ describe('check the products catalog', () => {
         ProductCategoryPage.inputLimit();
         ProductCategoryPage.selectProduct(productName);
         cy.url().should('include', 'route=product/product');
-        ProductPage.checkProduct().invoke('text').then((data) => {
+        ProductPage.checkProduct().then((data) => {
             const product = data;
             expect(product).have.to.equal(productName);
             cy.log(`The product is :", ${product}`);

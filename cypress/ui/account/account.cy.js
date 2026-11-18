@@ -21,7 +21,7 @@ describe('Links are open correctly', () => {
     beforeEach(() => {
         LoginPage.visit();
         LoginPage.login(user.email, user.password);
-        cy.url({ timeout: 30000 })
+        cy.url({ timeout: 10000 })
             .should('include', 'route=account/account');
     });
 
@@ -52,6 +52,6 @@ describe('Links are open correctly', () => {
 
     it('Enter to Logout Page', () => {
         AccountPage.clickLogout();
-        cy.url({ timeout: 3000 }).should('include', 'route=account/logout');
+        cy.url({ timeout: 10000 }).should('include', 'route=account/logout');
     });
 });

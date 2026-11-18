@@ -34,7 +34,7 @@ class Account {
     }
 
     clickContinue() {
-        this.elements.continuebutton().should('be.visible').click();
+        return this.elements.continuebutton().should('be.visible').click();
     }
 }
 

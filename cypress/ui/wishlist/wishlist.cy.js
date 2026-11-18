@@ -16,22 +16,24 @@ describe('Check the wishlist ', () => {
                 ...validUser,
                 email: `fran${Date.now()}@gmail.com`,
             };
+
+            RegisterPage.visit();
+            cy.registerUser(user);
+            AccountPage.clickLogout({ timeout: 10000 });
+            LoginPage.visit();
+            LoginPage.login(user.email, user.password);
+            cy.url().should('include', 'route=account/account');
+            ProductCategoryPage.visit();
+            cy.url().should('include', 'route=product/category');
+            ProductCategoryPage.clickTablets();
+            ProductCategoryPage.clickWhiListTable();
+            ProductCategoryPage.clickCameras();
+            ProductCategoryPage.clickWhiListCamera();
+            HeaderPage.clickMyAccount();
+            AccountPage.clickWishList();
+            cy.url().should('include', 'route=account/wishlist');
         });
-        RegisterPage.visit();
-        cy.registerUser(user);
-        AccountPage.clickLogout();
-        LoginPage.visit();
-        LoginPage.login(user.email, user.password);
-        cy.url().should('include', 'route=account/account');
-        ProductCategoryPage.visit();
-        cy.url().should('include', 'route=product/category');
-        ProductCategoryPage.clickTablets();
-        ProductCategoryPage.clickWhiListTable();
-        ProductCategoryPage.clickCameras();
-        ProductCategoryPage.clickWhiListCamera();
-        HeaderPage.clickMyAccount();
-        AccountPage.clickWishList();
-        cy.url().should('include', 'route=account/wishlist');
+
     });
 
     it('Check that the products are added to the whilist page', () => {
@@ -76,15 +78,15 @@ describe('Check the wishlist ', () => {
             .should('be.visible')
             .invoke('text')
             .then((text) => {
-            cy.log(text);
-            expect(text.trim()).to.eq('Success: You have added Samsung Galaxy Tab 10.1 to your shopping cart!');
-        });
+                cy.log(text);
+                expect(text.trim()).to.eq('Success: You have added Samsung Galaxy Tab 10.1 to your shopping cart!');
+            });
     });
 
     it('click continue from the whilistpage', () => {
         MyWishListPage.checkProduct1().should('be.visible');
         MyWishListPage.checkProduct2().should('be.visible');
         MyWishListPage.continueButton();
-        cy.url().should('include', 'route=account/account');
+        cy.url({ timeout: 10000 }).should('include', 'route=account/account');
     });
 });

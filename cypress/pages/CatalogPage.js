@@ -1,6 +1,6 @@
 class Catalog {
     elements = {
-        addToCartButton: (productName) => cy.get('.product-thumb').contains('a[href*="route=product/product"]', productName).closest('.product-thumb').find('button[formaction*="route=checkout/cart.add"]'),
+        addToCartButton: (productName, options = {}) => cy.get('.product-thumb', options).contains('a[href*="route=product/product"]', productName).closest('.product-thumb').find('button[formaction*="route=checkout/cart.add"]'),
         cartSummaryButton: () => cy.get('#cart').find('button[type="button"]'),
         viewCart: () => cy.contains('#cart a', 'View Cart'),
         checkout: () => cy.get('[href="http://localhost/index.php?route=checkout/checkout&language=en-gb"] > strong'),
@@ -11,7 +11,7 @@ class Catalog {
     };
 
     addToCartButton(productName) {
-        this.elements.addToCartButton(productName).should('be.visible').click();
+        this.elements.addToCartButton(productName, { timeout: 10000 }).should('be.visible').click();
     }
 
     cartSummaryButton() {

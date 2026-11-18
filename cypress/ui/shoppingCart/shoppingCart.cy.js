@@ -26,11 +26,23 @@ describe('shopping Cart', () => {
             email: `fran${Date.now()}@gmail.com`,
         };
         RegisterPage.visit();
+        cy.intercept('POST', '**route=account/register.register*')
+            .as('registerRequest');
         cy.registerUser(user);
+        cy.wait('@registerRequest');
+
+        cy.get('a.list-group-item[href*="route=account/logout"]', {
+            timeout: 10000
+        }).should('be.visible')
         AccountPage.clickLogout();
         cy.url().should('include', 'route=account/logout');
         LoginPage.visit();
+        cy.intercept('POST', '**route=account/login.login*').as('initialLogin');
         LoginPage.login(user.email, user.password);
+        cy.wait('@initialLogin').then(({ request, response }) => {
+            cy.log('Request body: ' + JSON.stringify(request.body));
+            cy.log('Response body: ' + JSON.stringify(response.body));
+        });
         cy.url().should('include', 'route=account/account');
         AccountPage.clickAddressBook();
         cy.url().should('include', 'route=account/address');
@@ -48,7 +60,12 @@ describe('shopping Cart', () => {
         AccountPage.clickLogout();
         cy.url().should('include', 'route=account/logout');
         LoginPage.visit();
+        cy.intercept('POST', '**route=account/login.login*').as('initialLogin');
         LoginPage.login(user.email, user.password);
+        cy.wait('@initialLogin').then(({ request, response }) => {
+            cy.log('Request body: ' + JSON.stringify(request.body));
+            cy.log('Response body: ' + JSON.stringify(response.body));
+        });
         cy.url({ timeout: 10000 }).should('include', 'route=account/account');
     });
 
@@ -80,7 +97,7 @@ describe('shopping Cart', () => {
         HeaderPage.openCartLogo();
         cy.url().should('include', 'route=common/home');
         CatalogPage.addToCartButton(productName);
-        cy.get('#cart').should('contain.text', '1 item(s)');
+        cy.get('#cart', { timeout: 10000 }).should('contain.text', '1 item(s)');
         CatalogPage.cartSummaryButton();
         CatalogPage.viewQuantity(productName).invoke('text').then((data) => {
             const quantity = data.match(/\d+/)[0];
@@ -118,9 +135,9 @@ describe('shopping Cart', () => {
         });
         cy.contains('a[href*="route=product/product"]', 'MacBook')
             .then(($link) => {
-            cy.log('Enlace encontrado: ' + $link[0].outerHTML);
-            cy.log('Contenedor padre: ' + $link.parent()[0].outerHTML);
-        });
+                cy.log('Enlace encontrado: ' + $link[0].outerHTML);
+                cy.log('Contenedor padre: ' + $link.parent()[0].outerHTML);
+            });
         CatalogPage.addToCartButton(productName);
         cy.get('.alert-success').should('be.visible');
         cy.get('.btn-close').click();

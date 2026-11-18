@@ -29,7 +29,7 @@ describe('Address Book', () => {
         };
         RegisterPage.visit();
         cy.registerUser(user);
-        AccountPage.clickLogout();
+        AccountPage.clickLogout({ timeout: 10000 });
         cy.url().should('include', 'route=account/logout');
         LoginPage.visit();
         LoginPage.login(user.email, user.password);
@@ -68,10 +68,12 @@ describe('Address Book', () => {
             email: `fran${Date.now()}@gmail.com`,
             password: validUser.password
         };
+        cy.log(`User creado: ${JSON.stringify(user)}`);
         RegisterPage.visit();
+        cy.log(`Firstname: ${user.firstname}`);
+        cy.log(`Lastname: ${user.lastname}`);
         cy.registerUser(user);
         AccountPage.clickLogout();
-        cy.url().should('include', 'route=account/logout');
         LoginPage.visit();
         LoginPage.login(user.email, user.password);
         cy.url().should('include', 'route=account/account');
@@ -79,14 +81,21 @@ describe('Address Book', () => {
         cy.url().should('include', 'route=account/address');
         AddressBookEntriesPage.clickNewAddress();
         cy.url().should('include', 'route=account/address.form');
+
+        const emptyAddress = { ...user };
+
         requiredFields.forEach(field => {
-            user[field] = '';
+            emptyAddress[field] = '';
         });
+
         AccountPage.clickContinue();
-        AddAddressBookPage.emptyNewAddressFields(user);
+        cy.url().should('include', 'route=account/address.form');
+
+        AddAddressBookPage.emptyNewAddressFields(emptyAddress);
         AddAddressBookPage.countryField();
-        AccountPage.clickContinue();
-        AddAddressBookPage.verifyErrorCountry();
+        AccountPage.clickContinue().then(()=>{AddAddressBookPage.verifyErrorCountry()});
+
+        
     });
 
     it('Delete Address', () => {

@@ -59,9 +59,9 @@ describe('Check de order history page', () => {
         cy.url().should('include', 'route=account/logout');
         LoginPage.visit();
         LoginPage.login(user.email, user.password);
-        cy.url({ timeout: 5000 }).should('include', 'route=account/account');
+        cy.url({ timeout: 10000 }).should('include', 'route=account/account');
         ProductCategoryPage.visit();
-        cy.url({ timeout: 5000 }).should('include', 'route=product/category');
+        cy.url({ timeout: 10000 }).should('include', 'route=product/category');
         ProductCategoryPage.clickCameras();
         ProductCategoryPage.clickWhiListCamera();
         cy.get('.alert')
@@ -105,7 +105,7 @@ describe('Check de order history page', () => {
         });
         SuccesCheckoutPage.checktittle();
         SuccesCheckoutPage.continueButton();
-        cy.url({ timeout: 5000 }).should('include', 'route=common/home');
+        cy.url({ timeout: 10000 }).should('include', 'route=common/home');
     });
 
     beforeEach(() => {

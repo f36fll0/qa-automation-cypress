@@ -16,6 +16,8 @@ class RegisterPage {
     }
 
     fillRegisterForm({ firstname, lastname, email, password }) {
+       
+         cy.log(`fillRegisterForm: ${firstname} ${lastname}`)
         if (firstname !== undefined && firstname !== '') {
             this.elements.firstnameinput().clear().type(firstname);
         }

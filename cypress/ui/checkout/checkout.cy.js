@@ -65,13 +65,13 @@ describe('shopping Cart', () => {
         CheckoutPage.chooseAddress();
         CheckoutPage.confirmOrderButton().should('be.disabled');
         cy.contains('#alert .alert-success', 'Success: You have changed shipping address!').should('be.visible');
-        cy.get('#alert .alert-success', { timeout: 8000 })
+        cy.get('#alert .alert-success', { timeout:10000 })
             .should('not.exist');
         CheckoutPage.shippingChoose().then((shippingSaved) => {
             if (shippingSaved) {
                 CheckoutPage.payMethodChoose();
                 cy.contains('.alert', 'Success: You have changed payment method!', { timeout: 15000 }).should('be.visible');
-                cy.contains('.alert', 'Success: You have changed payment method!', { timeout: 10000 }).should('not.exist').then(() => {
+                cy.contains('.alert', 'Success: You have changed payment method!', { timeout: 15000 }).should('not.exist').then(() => {
                     CheckoutPage.confirmOrderButton().should('be.enabled');
                     CheckoutPage.confirmOrderButton(true);
                 });

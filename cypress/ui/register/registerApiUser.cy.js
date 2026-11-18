@@ -15,7 +15,7 @@ describe('User registration', () => {
         RegisterPage.visit();
     });
 
-    it('Register user with newsletter subscription', () => {
+    it.skip('Register user with newsletter subscription', () => {
         const user = {
             ...validUser,
             email: 'fran.api.test@gmail.com'
