@@ -27,3 +27,9 @@ services:
     volumes:
       - ../opencart/upload:/var/www/html
     working_dir: /var/www/html
+    command: >
+      bash -c "
+        chown -R www-data:www-data /var/www/html/system/storage &&
+        chown -R www-data:www-data /var/www/html/image &&
+        apache2-foreground
+      "
