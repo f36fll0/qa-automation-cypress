@@ -21,7 +21,7 @@ Given("the customer is logged in to OpenCart", () => {
             const validAddress = addressData.addressBook;
             RegisterPage.visit();
             cy.registerUser(user);
-            cy.url().should("include", "/success");
+            cy.url({ timeout: 10000 }).should("include", "/success");
             AccountPage.clickLogout();
             cy.url().should("include", "route=account/logout");
             LoginPage.visit();

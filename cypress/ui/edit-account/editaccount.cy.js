@@ -40,8 +40,10 @@ describe('edit account page', () => {
 
                 cy.log('Response body: ' + JSON.stringify(response.body))
 
+                cy.url({ timeout: 10000 }).should('include', 'route=account/account');
+
             })
-            cy.url({ timeout: 10000 }).should('include', 'route=account/account');
+            
         });
 
         it('Replace name from edit account page', () => {
