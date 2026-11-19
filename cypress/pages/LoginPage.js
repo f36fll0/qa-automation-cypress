@@ -12,13 +12,33 @@ class LoginPage {
         cy.visit('http://localhost/index.php?route=account/login&language=en-gb');
     }
 
-    login(email, password) {
-        this.elements.myAccountInput().should('be.visible').click();
-        this.elements.loginbuttonSelector().should('be.visible').click();
-        this.elements.usernameInput().type(email);
-        this.elements.passwordInput().type(password);
-        this.elements.loginInput().should('be.visible').click();
-    }
+   login(email, password) {
+
+    this.elements.myAccountInput().should('be.visible').click();
+    this.elements.loginbuttonSelector().should('be.visible').click();
+
+    cy.intercept('POST', '**/index.php?route=account/login*')
+        .as('login');
+
+    this.elements.usernameInput().should('be.visible').type(email);
+    this.elements.passwordInput().should('be.visible').type(password);
+    this.elements.loginInput().should('be.visible').click();
+
+    cy.wait('@login').then((interception) => {
+
+        cy.log('Login status:', interception.response?.statusCode);
+
+        cy.log(
+            'Login response:',
+            JSON.stringify(interception.response?.body)
+        );
+
+        expect(interception.response).to.exist;
+        expect(interception.response.statusCode).to.eq(200);
+
+    });
+
+}
 
     forgotPassword() {
         this.elements.forgotPassword().should('be.visible').click();

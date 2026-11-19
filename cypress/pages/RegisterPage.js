@@ -16,8 +16,8 @@ class RegisterPage {
     }
 
     fillRegisterForm({ firstname, lastname, email, password }) {
-       
-         cy.log(`fillRegisterForm: ${firstname} ${lastname}`)
+
+        cy.log(`fillRegisterForm: ${firstname} ${lastname}`)
         if (firstname !== undefined && firstname !== '') {
             this.elements.firstnameinput().clear().type(firstname);
         }
@@ -71,8 +71,31 @@ class RegisterPage {
     }
 
     clickContinue() {
-        this.elements.continuebutton().should('not.be.disabled').click();
+
+        cy.intercept('POST', '**/index.php?route=account/register*')
+            .as('register');
+
+        this.elements.continuebutton()
+            .should('be.enabled')
+            .click();
+
+        cy.wait('@register').then((interception) => {
+
+            cy.log('Status:', interception.response?.statusCode);
+
+            cy.log(
+                'Response:',
+                JSON.stringify(interception.response?.body)
+            );
+
+        });
     }
+
+    clickContinueOriginal() {
+    this.elements.continuebutton()
+        .should('not.be.disabled')
+        .click();
+}
 
     verifyFieldError(field) {
         const errorMessages = {

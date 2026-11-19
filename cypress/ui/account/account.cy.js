@@ -17,12 +17,21 @@ describe('Links are open correctly', () => {
             cy.registerUser(user);
         });
     });
-
     beforeEach(() => {
+
+        cy.intercept('POST', '**/index.php?route=account/login*').as('login');
+
         LoginPage.visit();
         LoginPage.login(user.email, user.password);
+
+        cy.wait('@login').then((interception) => {
+            cy.log('Login response:', JSON.stringify(interception.response?.body));
+            expect(interception.response.statusCode).to.eq(200);
+        });
+
         cy.url({ timeout: 10000 })
             .should('include', 'route=account/account');
+
     });
 
     it('Enter Edit account page', () => {

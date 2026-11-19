@@ -91,10 +91,28 @@ When("confirms the order", () => {
 });
 
 Then("the order confirmation should be displayed", () => {
-    cy.url({ timeout: 10000 })
-        .should("include", "route=checkout/success");
 
-    SuccesCheckoutPage.checktittle();
+    cy.intercept('GET', '**/index.php?route=checkout/success*')
+        .as('orderConfirmation');
+
+    cy.wait('@orderConfirmation').then((interception) => {
+
+        cy.log('Status:', interception.response?.statusCode);
+
+        cy.log(
+            'Response:',
+            JSON.stringify(interception.response?.body)
+        );
+
+        expect(interception.response?.statusCode).to.eq(200);
+
+        cy.url({ timeout: 10000 })
+            .should("include", "route=checkout/success");
+
+        SuccesCheckoutPage.checktittle();
+
+    });
+
 });
 
 Then("the order should appear in the order history", () => {

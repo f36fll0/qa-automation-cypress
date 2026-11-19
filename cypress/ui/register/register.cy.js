@@ -48,14 +48,21 @@ describe('User registration', () => {
     });
 
     it('insert wrong mail Form', () => {
+
         const user = {
             ...validUser,
             email: `fran${Date.now()}gmail.com`,
         };
-        cy.registerUser(user);
+
+        RegisterPage.fillRegisterForm(user);
+        RegisterPage.clickSubscribe();
+        RegisterPage.clickPrivacyPolicy();
+        RegisterPage.clickContinueOriginal();
+
         cy.get('#input-email').then(($input) => {
             expect($input[0].checkValidity()).to.be.false;
         });
+
     });
     const requiredFields = ['firstname', 'lastname', 'email', 'password'];
     requiredFields.forEach((field) => {
