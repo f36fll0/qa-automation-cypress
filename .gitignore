@@ -4,3 +4,6 @@ cypress/videos/
 .env
 .DS_Store
 opencart.sql
+opencart.sql.gz
+opencart_base64.txt
+opencart_part_*.txt

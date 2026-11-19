@@ -26,6 +26,15 @@ jobs:
           ref: 4.1.0.3
           path: opencart
 
+      - name: Download private database backup
+        uses: actions/checkout@v7
+        with:
+          repository: f36fll0/opencart.sql.gz
+          ref: main
+          token: ${{ secrets.OPENCART_DB_TOKEN }}
+          path: db-backup
+          persist-credentials: false
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
@@ -36,42 +45,94 @@ jobs:
 
       - name: Prepare OpenCart configuration
         run: |
-          cp opencart/upload/config-dist.php opencart/upload/config.php
-          cp opencart/upload/admin/config-dist.php opencart/upload/admin/config.php
+          cat > opencart/upload/config.php <<'PHP'
+          <?php
+          define('APPLICATION', 'Catalog');
+          define('HTTP_SERVER', 'http://localhost/');
 
-      - name: Start Docker containers
-        run: docker compose -f docker/docker-compose.yml up -d --build
+          define('DIR_OPENCART', '/var/www/html/');
+          define('DIR_APPLICATION', DIR_OPENCART . 'catalog/');
+          define('DIR_SYSTEM', DIR_OPENCART . 'system/');
+          define('DIR_EXTENSION', DIR_OPENCART . 'extension/');
+          define('DIR_IMAGE', DIR_OPENCART . 'image/');
+          define('DIR_STORAGE', DIR_SYSTEM . 'storage/');
+          define('DIR_LANGUAGE', DIR_APPLICATION . 'language/');
+          define('DIR_TEMPLATE', DIR_APPLICATION . 'view/template/');
+          define('DIR_CONFIG', DIR_SYSTEM . 'config/');
+          define('DIR_CACHE', DIR_STORAGE . 'cache/');
+          define('DIR_DOWNLOAD', DIR_STORAGE . 'download/');
+          define('DIR_LOGS', DIR_STORAGE . 'logs/');
+          define('DIR_SESSION', DIR_STORAGE . 'session/');
+          define('DIR_UPLOAD', DIR_STORAGE . 'upload/');
 
-      - name: Wait for PHP container
+          define('DB_DRIVER', 'mysqli');
+          define('DB_HOSTNAME', 'mysql');
+          define('DB_USERNAME', 'opencart');
+          define('DB_PASSWORD', 'opencart');
+          define('DB_DATABASE', 'opencart');
+          define('DB_PREFIX', 'oc_');
+          define('DB_PORT', '3306');
+          PHP
+
+          cat > opencart/upload/admin/config.php <<'PHP'
+          <?php
+          define('APPLICATION', 'Admin');
+          define('HTTP_SERVER', 'http://localhost/admin/');
+          define('HTTP_CATALOG', 'http://localhost/');
+
+          define('DIR_OPENCART', '/var/www/html/');
+          define('DIR_APPLICATION', DIR_OPENCART . 'admin/');
+          define('DIR_SYSTEM', DIR_OPENCART . 'system/');
+          define('DIR_EXTENSION', DIR_OPENCART . 'extension/');
+          define('DIR_IMAGE', DIR_OPENCART . 'image/');
+          define('DIR_STORAGE', DIR_SYSTEM . 'storage/');
+          define('DIR_CATALOG', DIR_OPENCART . 'catalog/');
+          define('DIR_LANGUAGE', DIR_APPLICATION . 'language/');
+          define('DIR_TEMPLATE', DIR_APPLICATION . 'view/template/');
+          define('DIR_CONFIG', DIR_SYSTEM . 'config/');
+          define('DIR_CACHE', DIR_STORAGE . 'cache/');
+          define('DIR_DOWNLOAD', DIR_STORAGE . 'download/');
+          define('DIR_LOGS', DIR_STORAGE . 'logs/');
+          define('DIR_SESSION', DIR_STORAGE . 'session/');
+          define('DIR_UPLOAD', DIR_STORAGE . 'upload/');
+
+          define('DB_DRIVER', 'mysqli');
+          define('DB_HOSTNAME', 'mysql');
+          define('DB_USERNAME', 'opencart');
+          define('DB_PASSWORD', 'opencart');
+          define('DB_DATABASE', 'opencart');
+          define('DB_PREFIX', 'oc_');
+          define('DB_PORT', '3306');
+
+          define('OPENCART_SERVER', 'https://www.opencart.com/');
+          PHP
+
+      - name: Start MySQL
+        run: docker compose -f docker/docker-compose.yml up -d mysql
+
+      - name: Wait for MySQL
         run: |
           for i in {1..30}; do
-            if docker compose -f docker/docker-compose.yml exec -T opencart php -v; then
+            if docker compose -f docker/docker-compose.yml exec -T mysql \
+              mysqladmin ping -h 127.0.0.1 -u root -popencart --silent; then
               exit 0
             fi
             sleep 2
           done
-          echo "PHP container did not start"
+          echo "MySQL did not start"
           exit 1
 
-      - name: Install OpenCart
+      - name: Restore OpenCart database
         run: |
-          docker compose -f docker/docker-compose.yml exec -T opencart \
-            php install/cli_install.php install \
-            --username admin \
-            --email admin@example.com \
-            --password password123 \
-            --http_server http://localhost/ \
-            --language en-gb \
-            --db_driver mysqli \
-            --db_hostname mysql \
-            --db_username opencart \
-            --db_password opencart \
-            --db_database opencart \
-            --db_port 3306 \
-            --db_prefix oc_
+          gunzip -c db-backup/opencart.sql.gz | \
+            docker compose -f docker/docker-compose.yml exec -T mysql \
+            mysql -u root -popencart opencart
 
       - name: Remove OpenCart installer
-        run: docker compose -f docker/docker-compose.yml exec -T opencart rm -rf install
+        run: rm -rf opencart/upload/install
+
+      - name: Start OpenCart
+        run: docker compose -f docker/docker-compose.yml up -d opencart
 
       - name: Wait for OpenCart
         run: |
