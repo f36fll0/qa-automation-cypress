@@ -126,7 +126,7 @@ jobs:
         run: |
           gunzip -c db-backup/opencart.sql.gz | \
             docker compose -f docker/docker-compose.yml exec -T mysql \
-            mysql -u root -popencart opencart
+            mysql --binary-mode=1 -u root -popencart opencart
 
       - name: Remove OpenCart installer
         run: rm -rf opencart/upload/install
