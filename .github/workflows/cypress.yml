@@ -124,7 +124,7 @@ jobs:
 
       - name: Restore OpenCart database
         run: |
-          gunzip -c db-backup/opencart.sql.gz | \
+          tar -xOzf db-backup/opencart.sql.gz opencart.sql | \
             docker compose -f docker/docker-compose.yml exec -T mysql \
             mysql --binary-mode=1 -u root -popencart opencart
 
