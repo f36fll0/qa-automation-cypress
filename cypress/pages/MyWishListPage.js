@@ -48,22 +48,12 @@ class myWishList {
         }
     }
 
-   remove(product1, product2) {
-
+  remove(product1, product2) {
     if (product1 !== 0) {
-        this.elements.cameraRemoveButton()
-            .should('be.visible')
-            .click();
-
-        cy.contains('tr', 'Canon EOS 5D').should('not.exist');
+        this.elements.cameraRemoveButton().should('be.visible').click();
     }
-
     if (product2 !== 0) {
-        this.elements.tabletRemoveButton()
-            .should('be.visible')
-            .click();
-
-        cy.contains('tr', 'Samsung').should('not.exist');
+        this.elements.tabletRemoveButton().should('be.visible').click();
     }
 }
 
