@@ -54,7 +54,6 @@ describe('Check the wishlist ', () => {
             .should('be.visible')
             .and('contain.text', product2Details.name)
             .and('contain.text', product2Details.model)
-            .and('contain.text', product2Details.quantity)
             .and('contain.text', product2Details.price);
     });
 

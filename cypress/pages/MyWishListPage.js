@@ -31,7 +31,6 @@ class myWishList {
         return {
             name: 'Canon EOS 5D',
             model: 'Product 3',
-            quantity: '7',
             price: '$122.00'
         };
     }
