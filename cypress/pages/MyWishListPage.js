@@ -48,12 +48,34 @@ class myWishList {
         }
     }
 
-  remove(product1, product2) {
+ remove(product1, product2) {
+
     if (product1 !== 0) {
-        this.elements.cameraRemoveButton().should('be.visible').click();
+
+        cy.intercept('GET', '**/account/wishlist.remove*')
+            .as('removeCamera');
+
+        this.elements.cameraRemoveButton()
+            .should('be.visible')
+            .click();
+
+        cy.wait('@removeCamera')
+            .its('response.statusCode')
+            .should('eq', 200);
     }
+
     if (product2 !== 0) {
-        this.elements.tabletRemoveButton().should('be.visible').click();
+
+        cy.intercept('GET', '**/account/wishlist.remove*')
+            .as('removeTablet');
+
+        this.elements.tabletRemoveButton()
+            .should('be.visible')
+            .click();
+
+        cy.wait('@removeTablet')
+            .its('response.statusCode')
+            .should('eq', 200);
     }
 }
 
