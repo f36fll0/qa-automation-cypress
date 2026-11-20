@@ -87,15 +87,15 @@ When("completes the shipping and payment details", () => {
 });
 
 When("confirms the order", () => {
+
+      cy.intercept('GET', '**/index.php?route=checkout/success*')
+        .as('orderConfirmation');
     CheckoutPage.confirmOrderButton(true);
 });
 
 Then("the order confirmation should be displayed", () => {
 
-    cy.intercept('GET', '**/index.php?route=checkout/success*')
-        .as('orderConfirmation');
-
-    cy.wait('@orderConfirmation').then((interception) => {
+    cy.wait('@orderConfirmation', { timeout: 10000 }).then((interception) => {
 
         cy.log('Status:', interception.response?.statusCode);
 
