@@ -136,24 +136,14 @@ jobs:
             docker compose -f docker/docker-compose.yml exec -T mysql \
             mysql --binary-mode=1 -u root -popencart opencart
 
-      # 10. Comprobar datos de productos
-      - name: Check database products
+      # 10. Comprobar stock inicial de Canon
+      - name: Check initial Canon stock
         run: |
           docker compose -f docker/docker-compose.yml exec -T mysql \
             mysql -u root -popencart opencart -e "
-            SELECT
-              p.product_id,
-              pd.name,
-              p.quantity,
-              p.model,
-              p.price
-            FROM oc_product p
-            JOIN oc_product_description pd
-              ON p.product_id = pd.product_id
-            WHERE pd.name IN (
-              'Canon EOS 5D',
-              'Samsung Galaxy Tab 10.1'
-            );
+            SELECT product_id, model, quantity
+            FROM oc_product
+            WHERE product_id = 30;
             "
 
       # 11. Eliminar el instalador
@@ -181,7 +171,18 @@ jobs:
       - name: Run Cypress tests
         run: npx cypress run
 
-      # 15. Subir vídeos y capturas
+      # 15. Comprobar stock final de Canon
+      - name: Check final Canon stock
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.yml exec -T mysql \
+            mysql -u root -popencart opencart -e "
+            SELECT product_id, model, quantity
+            FROM oc_product
+            WHERE product_id = 30;
+            "
+
+      # 16. Subir vídeos y capturas
       - name: Upload Cypress videos and screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -193,12 +194,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # 16. Mostrar logs si falla la ejecución
+      # 17. Mostrar logs si falla la ejecución
       - name: Docker logs
         if: failure()
         run: docker compose -f docker/docker-compose.yml logs
 
-      # 17. Limpiar contenedores
+      # 18. Limpiar contenedores
       - name: Stop containers
         if: always()
         run: docker compose -f docker/docker-compose.yml down -v
