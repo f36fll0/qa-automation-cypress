@@ -52,8 +52,13 @@ class myWishList {
 
     if (product1 !== 0) {
 
-        cy.intercept('GET', '**/account/wishlist.remove*')
-            .as('removeCamera');
+        cy.intercept({
+            method: 'GET',
+            pathname: '/index.php',
+            query: {
+                route: 'account/wishlist.remove'
+            }
+        }).as('removeCamera');
 
         this.elements.cameraRemoveButton()
             .should('be.visible')
@@ -66,8 +71,13 @@ class myWishList {
 
     if (product2 !== 0) {
 
-        cy.intercept('GET', '**/account/wishlist.remove*')
-            .as('removeTablet');
+        cy.intercept({
+            method: 'GET',
+            pathname: '/index.php',
+            query: {
+                route: 'account/wishlist.remove'
+            }
+        }).as('removeTablet');
 
         this.elements.tabletRemoveButton()
             .should('be.visible')
