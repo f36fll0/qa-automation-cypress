@@ -10,6 +10,9 @@ on:
       - clean-code
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   cypress:
     runs-on: ubuntu-latest
@@ -17,11 +20,11 @@ jobs:
     steps:
       # 1. Descargar el proyecto
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # 2. Descargar OpenCart
       - name: Checkout OpenCart
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: opencart/opencart
           ref: 4.1.0.3
@@ -29,16 +32,17 @@ jobs:
 
       # 3. Descargar la copia privada de la base de datos
       - name: Checkout database backup
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: f36fll0/opencart.sql.gz
+          ref: main
           token: ${{ secrets.OPENCART_DB_TOKEN }}
           path: db-backup
           persist-credentials: false
 
       # 4. Configurar Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -50,16 +54,16 @@ jobs:
       # 6. Crear configuración de OpenCart
       - name: Configure OpenCart
         run: |
-          cat > opencart/upload/config.php <<'EOF'
+          cat > opencart/upload/config.php <<'PHP'
           <?php
-          // HTTP
+          define('APPLICATION', 'Catalog');
           define('HTTP_SERVER', 'http://localhost/');
-
-          // DIR
-          define('DIR_APPLICATION', '/var/www/html/catalog/');
-          define('DIR_SYSTEM', '/var/www/html/system/');
-          define('DIR_IMAGE', '/var/www/html/image/');
-          define('DIR_STORAGE', '/var/www/html/system/storage/');
+          define('DIR_OPENCART', '/var/www/html/');
+          define('DIR_APPLICATION', DIR_OPENCART . 'catalog/');
+          define('DIR_SYSTEM', DIR_OPENCART . 'system/');
+          define('DIR_EXTENSION', DIR_OPENCART . 'extension/');
+          define('DIR_IMAGE', DIR_OPENCART . 'image/');
+          define('DIR_STORAGE', DIR_SYSTEM . 'storage/');
           define('DIR_LANGUAGE', DIR_APPLICATION . 'language/');
           define('DIR_TEMPLATE', DIR_APPLICATION . 'view/template/');
           define('DIR_CONFIG', DIR_SYSTEM . 'config/');
@@ -68,29 +72,27 @@ jobs:
           define('DIR_LOGS', DIR_STORAGE . 'logs/');
           define('DIR_SESSION', DIR_STORAGE . 'session/');
           define('DIR_UPLOAD', DIR_STORAGE . 'upload/');
-
-          // DB
           define('DB_DRIVER', 'mysqli');
           define('DB_HOSTNAME', 'mysql');
           define('DB_USERNAME', 'opencart');
           define('DB_PASSWORD', 'opencart');
           define('DB_DATABASE', 'opencart');
-          define('DB_PORT', '3306');
           define('DB_PREFIX', 'oc_');
-          EOF
+          define('DB_PORT', '3306');
+          PHP
 
-          cat > opencart/upload/admin/config.php <<'EOF'
+          cat > opencart/upload/admin/config.php <<'PHP'
           <?php
-          // HTTP
+          define('APPLICATION', 'Admin');
           define('HTTP_SERVER', 'http://localhost/admin/');
           define('HTTP_CATALOG', 'http://localhost/');
-
-          // DIR
-          define('DIR_APPLICATION', '/var/www/html/admin/');
-          define('DIR_SYSTEM', '/var/www/html/system/');
-          define('DIR_IMAGE', '/var/www/html/image/');
-          define('DIR_STORAGE', '/var/www/html/system/storage/');
-          define('DIR_CATALOG', '/var/www/html/catalog/');
+          define('DIR_OPENCART', '/var/www/html/');
+          define('DIR_APPLICATION', DIR_OPENCART . 'admin/');
+          define('DIR_SYSTEM', DIR_OPENCART . 'system/');
+          define('DIR_EXTENSION', DIR_OPENCART . 'extension/');
+          define('DIR_IMAGE', DIR_OPENCART . 'image/');
+          define('DIR_STORAGE', DIR_SYSTEM . 'storage/');
+          define('DIR_CATALOG', DIR_OPENCART . 'catalog/');
           define('DIR_LANGUAGE', DIR_APPLICATION . 'language/');
           define('DIR_TEMPLATE', DIR_APPLICATION . 'view/template/');
           define('DIR_CONFIG', DIR_SYSTEM . 'config/');
@@ -99,16 +101,15 @@ jobs:
           define('DIR_LOGS', DIR_STORAGE . 'logs/');
           define('DIR_SESSION', DIR_STORAGE . 'session/');
           define('DIR_UPLOAD', DIR_STORAGE . 'upload/');
-
-          // DB
           define('DB_DRIVER', 'mysqli');
           define('DB_HOSTNAME', 'mysql');
           define('DB_USERNAME', 'opencart');
           define('DB_PASSWORD', 'opencart');
           define('DB_DATABASE', 'opencart');
-          define('DB_PORT', '3306');
           define('DB_PREFIX', 'oc_');
-          EOF
+          define('DB_PORT', '3306');
+          define('OPENCART_SERVER', 'https://www.opencart.com/');
+          PHP
 
       # 7. Iniciar MySQL
       - name: Start MySQL
@@ -123,7 +124,7 @@ jobs:
               echo "MySQL is ready"
               exit 0
             fi
-            sleep 5
+            sleep 2
           done
           echo "MySQL did not become ready"
           exit 1
@@ -148,12 +149,12 @@ jobs:
         run: |
           for i in {1..30}; do
             if curl -fsS http://localhost/ > /dev/null; then
-              echo "OpenCart is ready"
+              echo "OpenCart is responding"
               exit 0
             fi
-            sleep 5
+            sleep 2
           done
-          echo "OpenCart did not become ready"
+          echo "OpenCart did not respond"
           exit 1
 
       # 13. Ejecutar los tests
@@ -175,8 +176,7 @@ jobs:
       # 15. Mostrar logs si falla la ejecución
       - name: Docker logs
         if: failure()
-        run: |
-          docker compose -f docker/docker-compose.yml logs
+        run: docker compose -f docker/docker-compose.yml logs
 
       # 16. Limpiar contenedores
       - name: Stop containers
