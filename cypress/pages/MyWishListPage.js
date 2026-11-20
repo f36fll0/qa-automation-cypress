@@ -50,7 +50,7 @@ class myWishList {
 
  remove(product1, product2) {
 
-    if (product1 !== 0) {
+    const removeProduct = (button, alias) => {
 
         cy.intercept({
             method: 'GET',
@@ -58,37 +58,31 @@ class myWishList {
             query: {
                 route: 'account/wishlist.remove'
             }
-        }).as('removeCamera');
+        }).as(alias);
 
-        this.elements.cameraRemoveButton()
+        button()
             .should('be.visible')
             .click();
 
-        cy.wait('@removeCamera')
+        cy.wait(`@${alias}`)
             .its('response.statusCode')
             .should('eq', 200);
+    };
+
+    if (product1 !== 0) {
+        removeProduct(
+            this.elements.cameraRemoveButton,
+            'removeCamera'
+        );
     }
 
     if (product2 !== 0) {
-
-        cy.intercept({
-            method: 'GET',
-            pathname: '/index.php',
-            query: {
-                route: 'account/wishlist.remove'
-            }
-        }).as('removeTablet');
-
-        this.elements.tabletRemoveButton()
-            .should('be.visible')
-            .click();
-
-        cy.wait('@removeTablet')
-            .its('response.statusCode')
-            .should('eq', 200);
+        removeProduct(
+            this.elements.tabletRemoveButton,
+            'removeTablet'
+        );
     }
 }
-
     continueButton() {
         this.elements.continueButton().click();
     }
